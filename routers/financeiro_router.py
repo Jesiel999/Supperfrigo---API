@@ -416,7 +416,7 @@ def get_pessoas_filtro(
                    (SELECT MAX(p.nome) FROM pessoa_bi p WHERE p.id_sances = t.id_pessoa) AS nome
             FROM (
                 SELECT DISTINCT f.id_pessoa
-                FROM financeiro_bi f
+                FROM fato_financeiro_titulo f
                 WHERE {' AND '.join(filtros)}
             ) t
         """
@@ -628,7 +628,6 @@ def get_fcp_pagar(
     current_user: dict = Depends(get_current_user),
 ):
     """Títulos a PAGAR EM ABERTO de custos e despesas, com fornecedor, nota, parcela e valores.
-
     base_data: 'competencia' (padrão, mesma base do resto do FCP) ou 'vencimento'.
     """
     conn = connection_mysql()
@@ -697,7 +696,7 @@ def get_fcp_pagar(
                     WHEN f.numero_documento IS NULL OR f.numero_documento = '' THEN f.valor_nominal
                     ELSE (
                         SELECT SUM(x.valor_nominal)
-                        FROM financeiro_bi x
+                        FROM fato_financeiro_titulo x
                         WHERE x.tenant_id        = f.tenant_id
                           AND x.id_empresa       = f.id_empresa
                           AND x.id_pessoa        = f.id_pessoa
@@ -706,7 +705,7 @@ def get_fcp_pagar(
                           AND UPPER(x.descricao_situacao) NOT IN ('CANCELADO', 'BAIXADO', 'BAIXADO PARCIAL', 'UNIDO', 'RENEGOCIADO')
                     )
                 END                               AS valor_nota
-            FROM financeiro_bi f
+            FROM fato_financeiro_titulo f
             WHERE {' AND '.join(filtros)}
         """
 
@@ -781,7 +780,7 @@ def get_fcp_pagar(
         
 from datetime import date, timedelta   # (acrescente timedelta ao import existente)
 
-# Colunas que já vêm certas da financeiro_bi (numero_documento, origem, data_vencimento,
+# Colunas que já vêm certas da fato_financeiro_titulo (numero_documento, origem, data_vencimento,
 # data_baixa, status_financeiro) não precisam de mapeamento.
 _CANDIDATOS = {
     "descricao": ["descricao", "descricao_titulo", "historico", "observacao"],
@@ -839,7 +838,7 @@ def get_fcp_titulos(
                     ORDER BY r.id DESC
                     LIMIT 1
                 ), 0) AS valor_pago_calc
-            FROM financeiro_bi f
+            FROM fato_financeiro_titulo f
             WHERE {' AND '.join(filtros)}
             ORDER BY f.data_competencia, f.codigo_raw
         """
@@ -953,7 +952,7 @@ def get_fcp_titulos(
                     ORDER BY r.id DESC
                     LIMIT 1
                 ), 0) AS valor_pago_calc
-            FROM financeiro_bi f
+            FROM fato_financeiro_titulo f
             WHERE {' AND '.join(filtros)}
             ORDER BY f.data_competencia, f.codigo_raw
         """
@@ -1234,7 +1233,7 @@ def get_fluxo_caixa_titulos(
                 COALESCE(NULLIF((
                     SELECT SUM(r.valor_pago) FROM recebimentos_bi r WHERE r.codigo_raw = f.codigo_raw
                 ), 0), f.valor_total) AS valor_pago_calc
-            FROM financeiro_bi f
+            FROM fato_financeiro_titulo f
             WHERE {' AND '.join(filtros)}
             ORDER BY f.data_baixa, f.codigo_raw
         """
