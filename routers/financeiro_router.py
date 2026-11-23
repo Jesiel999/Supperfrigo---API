@@ -480,7 +480,7 @@ def get_dre(
                 v.id_pessoa,
                 SUM(v.valor_dre) AS total,
                 MAX(v.ultima_atualizacao) AS ultima_atualizacao
-            FROM plano_contas_bi pc
+            FROM dim_plano_contas pc
             JOIN (
                 SELECT
                     numero_conta_resultado,
@@ -564,7 +564,7 @@ def get_fcp(
                 v.periodo,
                 SUM(v.valor_dre) AS total,
                 MAX(v.ultima_atualizacao) AS ultima_atualizacao
-            FROM plano_contas_bi pc
+            FROM dim_plano_contas pc
             JOIN (
                 SELECT id_empresa,
                        id_pessoa,
@@ -1071,7 +1071,7 @@ def get_dre_despesas_mensal(
                 v.id_pessoa,
                 v.periodo,
                 v.total
-            FROM plano_contas_bi pc
+            FROM dim_plano_contas pc
             JOIN (
                 SELECT id_empresa,
                        id_pessoa,
@@ -1146,7 +1146,7 @@ def get_fluxo_caixa(
                 v.periodo,
                 SUM(v.valor_dre) AS total,
                 MAX(v.ultima_atualizacao) AS ultima_atualizacao
-            FROM plano_contas_bi pc
+            FROM dim_plano_contas pc
             JOIN (
                 SELECT id_empresa,
                        id_pessoa,
