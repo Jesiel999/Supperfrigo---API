@@ -28,7 +28,7 @@ def _buscar_pessoa(cursor, pessoa_id: int):
             cpf_cnpj,
             sexo,
             colaborador
-        FROM pessoa_bi
+        FROM dim_pessoa
         WHERE id = %s
         LIMIT 1
     """, (pessoa_id,))
@@ -52,7 +52,7 @@ def _buscar_pessoa_por_cpf(cursor, cpf_cnpj: str):
             cpf_cnpj,
             sexo,
             colaborador
-        FROM pessoa_bi
+        FROM dim_pessoa
         WHERE cpf_cnpj = %s
         LIMIT 1
     """, (cpf_cnpj,))
@@ -77,7 +77,7 @@ def listar_pessoas(
     try:
         sql = """
             SELECT id, nome, cpf_cnpj, sexo, colaborador
-            FROM pessoa_bi
+            FROM dim_pessoa
             WHERE 1 = 1
         """
         params = []
@@ -132,7 +132,7 @@ def criar_pessoa(
 ):
     """
     Antes de inserir, verifica se já existe uma pessoa com esse
-    cpf_cnpj (a coluna é UNIQUE em pessoa_bi, então um INSERT direto
+    cpf_cnpj (a coluna é UNIQUE em dim_pessoa, então um INSERT direto
     estouraria erro de integridade em vez de uma mensagem clara):
 
     - CPF já existe E já é colaborador  -> 409, não duplica.
@@ -159,7 +159,7 @@ def criar_pessoa(
             # Pessoa já existia na base (ex.: cliente) mas ainda não era
             # colaborador — reaproveita a linha em vez de duplicar.
             cursor.execute("""
-                UPDATE pessoa_bi
+                UPDATE dim_pessoa
                 SET
                     nome = %s,
                     sexo = %s,
@@ -176,7 +176,7 @@ def criar_pessoa(
             return _buscar_pessoa(cursor, pessoa_existente["id"])
 
         cursor.execute("""
-            INSERT INTO pessoa_bi (nome, cpf_cnpj, sexo, colaborador)
+            INSERT INTO dim_pessoa (nome, cpf_cnpj, sexo, colaborador)
             VALUES (%s, %s, %s, %s)
         """, (
             payload.nome,
@@ -209,7 +209,7 @@ def tornar_colaborador(
     conn=Depends(connection_mysql),
 ):
     """
-    Marca como colaborador uma pessoa que já existe em pessoa_bi
+    Marca como colaborador uma pessoa que já existe em dim_pessoa
     (ex.: sincronizada de outro sistema como cliente/fornecedor),
     identificada pelo CPF/CNPJ. Não cria pessoa nova — se o CPF não
     existir na base, retorna 404.
@@ -232,7 +232,7 @@ def tornar_colaborador(
             )
 
         cursor.execute("""
-            UPDATE pessoa_bi
+            UPDATE dim_pessoa
             SET colaborador = 1
             WHERE id = %s
         """, (pessoa["id"],))
@@ -283,7 +283,7 @@ def atualizar_pessoa(
         valores.append(pessoa_id)
 
         cursor.execute(
-            f"UPDATE pessoa_bi SET {set_clause} WHERE id = %s",
+            f"UPDATE dim_pessoa SET {set_clause} WHERE id = %s",
             valores
         )
 
@@ -310,7 +310,7 @@ def excluir_pessoa(
 ):
     """
     Soft delete: só desmarca `colaborador`, nunca apaga a linha de
-    pessoa_bi — ela pode estar referenciada em equipamento_movimentacao,
+    dim_pessoa — ela pode estar referenciada em equipamento_movimentacao,
     parque_tecnologico.id_colaborador e chip.id_colaborador.
     """
     cursor = conn.cursor(dictionary=True)
@@ -319,7 +319,7 @@ def excluir_pessoa(
         _buscar_pessoa(cursor, pessoa_id)
 
         cursor.execute("""
-            UPDATE pessoa_bi
+            UPDATE dim_pessoa
             SET colaborador = 0
             WHERE id = %s
         """, (pessoa_id,))

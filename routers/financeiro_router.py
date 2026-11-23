@@ -11,7 +11,7 @@ router = APIRouter()
 # ── Helper: aplica a regra básica de acesso por empresa ─────────────
 def _empresas_permitidas(current_user: dict) -> Optional[list]:
     """
-    None  = usuário sem restrição no JWT (vê todas as empresas do empresa_bi)
+    None  = usuário sem restrição no JWT (vê todas as empresas do dim_empresa)
     list  = lista de códigos (str) que o usuário PODE ver — qualquer coisa
             fora disso deve ser bloqueada, mesmo que o cliente peça.
     """
@@ -356,7 +356,7 @@ def get_pagar(
         conn.close()
 
 
-# Helper compartilhado: nome da pessoa (pessoa_bi) para os ids presentes nas linhas devolvidas.
+# Helper compartilhado: nome da pessoa (dim_pessoa) para os ids presentes nas linhas devolvidas.
 # O filtro de Pessoa BI agora é feito NO FRONT (padrão do ReceberService), então cada linha
 # precisa trazer id_pessoa e nome_pessoa.
 
@@ -366,14 +366,14 @@ def _nomes_pessoas(cursor, ids, lote: int = 1000) -> dict:
     for k in range(0, len(ids), lote):
         parte = ids[k:k + lote]
         cursor.execute(
-            f"""SELECT id_sances, MAX(nome) AS nome
-                FROM pessoa_bi
-                WHERE id_sances IN ({','.join(['%s'] * len(parte))})
-                GROUP BY id_sances""",
+            f"""SELECT codigo_sances, MAX(nome) AS nome
+                FROM dim_pessoa
+                WHERE codigo_sances IN ({','.join(['%s'] * len(parte))})
+                GROUP BY codigo_sances""",
             parte,
         )
         for p in cursor.fetchall():
-            nomes[str(p["id_sances"])] = p["nome"]
+            nomes[str(p["codigo_sances"])] = p["nome"]
     return nomes
  
  
@@ -413,7 +413,7 @@ def get_pessoas_filtro(
  
         sql = f"""
             SELECT t.id_pessoa AS id,
-                   (SELECT MAX(p.nome) FROM pessoa_bi p WHERE p.id_sances = t.id_pessoa) AS nome
+                   (SELECT MAX(p.nome) FROM dim_pessoa p WHERE p.codigo_sances = t.id_pessoa) AS nome
             FROM (
                 SELECT DISTINCT f.id_pessoa
                 FROM fato_financeiro_titulo f
@@ -611,7 +611,7 @@ from datetime import date, timedelta   # (acrescente timedelta ao import existen
 # Contas de resultado consideradas "a pagar": custos (3.2) e despesas (3.3).
 _FCP_CLASSES_PAGAR = ("3.2", "3.3")
 
-# Nome da empresa em empresa_bi (primeiro que existir e estiver preenchido).
+# Nome da empresa em dim_empresa (primeiro que existir e estiver preenchido).
 _FCP_COLS_NOME_EMPRESA = ["nome_fantasia", "razao_social", "nome_empresa", "nome", "fantasia", "descricao"]
 
 
@@ -719,7 +719,7 @@ def get_fcp_pagar(
         nomes_empresa: dict = {}
         if ids_empresa:
             cursor.execute(
-                f"SELECT * FROM empresa_bi WHERE codigo_empresa IN ({_fcp_in(len(ids_empresa))})",
+                f"SELECT * FROM dim_empresa WHERE codigo_empresa IN ({_fcp_in(len(ids_empresa))})",
                 ids_empresa,
             )
             for e in cursor.fetchall():
@@ -729,14 +729,14 @@ def get_fcp_pagar(
         nomes_pessoa: dict = {}
         if ids_pessoa:
             cursor.execute(
-                f"""SELECT id_sances, MAX(nome) AS nome
-                    FROM pessoa_bi
-                    WHERE id_sances IN ({_fcp_in(len(ids_pessoa))})
-                    GROUP BY id_sances""",
+                f"""SELECT codigo_sances, MAX(nome) AS nome
+                    FROM dim_pessoa
+                    WHERE codigo_sances IN ({_fcp_in(len(ids_pessoa))})
+                    GROUP BY codigo_sances""",
                 ids_pessoa,
             )
             for p in cursor.fetchall():
-                nomes_pessoa[str(p["id_sances"])] = p["nome"]
+                nomes_pessoa[str(p["codigo_sances"])] = p["nome"]
 
         for row in rows:
             nominal = float(row.get("valor_titulo") or 0)
@@ -786,7 +786,7 @@ _CANDIDATOS = {
     "descricao": ["descricao", "descricao_titulo", "historico", "observacao"],
 }
 
-# Nome da empresa em empresa_bi (usa o primeiro que existir e estiver preenchido).
+# Nome da empresa em dim_empresa (usa o primeiro que existir e estiver preenchido).
 # ⚠️ Se continuar null, acrescente aqui o nome real da coluna.
 _COLS_NOME_EMPRESA = ["nome_fantasia", "razao_social", "nome_empresa", "nome", "fantasia", "descricao"]
 
@@ -853,7 +853,7 @@ def get_fcp_titulos(
         nomes_empresa: dict = {}
         if ids_empresa:
             cursor.execute(
-                f"SELECT * FROM empresa_bi WHERE codigo_empresa IN ({_in(len(ids_empresa))})",
+                f"SELECT * FROM dim_empresa WHERE codigo_empresa IN ({_in(len(ids_empresa))})",
                 ids_empresa,
             )
             for e in cursor.fetchall():
@@ -863,14 +863,14 @@ def get_fcp_titulos(
         nomes_pessoa: dict = {}
         if ids_pessoa:
             cursor.execute(
-                f"""SELECT id_sances, MAX(nome) AS nome
-                    FROM pessoa_bi
-                    WHERE id_sances IN ({_in(len(ids_pessoa))})
-                    GROUP BY id_sances""",
+                f"""SELECT codigo_sances, MAX(nome) AS nome
+                    FROM dim_pessoa
+                    WHERE codigo_sances IN ({_in(len(ids_pessoa))})
+                    GROUP BY codigo_sances""",
                 ids_pessoa,
             )
             for p in cursor.fetchall():
-                nomes_pessoa[str(p["id_sances"])] = p["nome"]
+                nomes_pessoa[str(p["codigo_sances"])] = p["nome"]
 
         for row in rows:
             # valor COM SINAL, mesma regra da view (bate com o valor da conta)
@@ -967,7 +967,7 @@ def get_fcp_titulos(
         nomes_empresa: dict = {}
         if ids_empresa:
             cursor.execute(
-                f"SELECT * FROM empresa_bi WHERE codigo_empresa IN ({_in(len(ids_empresa))})",
+                f"SELECT * FROM dim_empresa WHERE codigo_empresa IN ({_in(len(ids_empresa))})",
                 ids_empresa,
             )
             for e in cursor.fetchall():
@@ -977,14 +977,14 @@ def get_fcp_titulos(
         nomes_pessoa: dict = {}
         if ids_pessoa:
             cursor.execute(
-                f"""SELECT id_sances, MAX(nome) AS nome
-                    FROM pessoa_bi
-                    WHERE id_sances IN ({_in(len(ids_pessoa))})
-                    GROUP BY id_sances""",
+                f"""SELECT codigo_sances, MAX(nome) AS nome
+                    FROM dim_pessoa
+                    WHERE codigo_sances IN ({_in(len(ids_pessoa))})
+                    GROUP BY codigo_sances""",
                 ids_pessoa,
             )
             for p in cursor.fetchall():
-                nomes_pessoa[str(p["id_sances"])] = p["nome"]
+                nomes_pessoa[str(p["codigo_sances"])] = p["nome"]
 
         for row in rows:
             # valor COM SINAL, mesma regra da view (bate com o valor da conta)
@@ -1245,7 +1245,7 @@ def get_fluxo_caixa_titulos(
         nomes_empresa: dict = {}
         if ids_empresa:
             cursor.execute(
-                f"SELECT * FROM empresa_bi WHERE codigo_empresa IN ({','.join(['%s'] * len(ids_empresa))})",
+                f"SELECT * FROM dim_empresa WHERE codigo_empresa IN ({','.join(['%s'] * len(ids_empresa))})",
                 ids_empresa,
             )
             for e in cursor.fetchall():

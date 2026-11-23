@@ -447,7 +447,7 @@ def atualizar_empresas_usuario(
         if codigos:
             placeholders = ",".join(["%s"] * len(codigos))
             cursor.execute(
-                f"SELECT codigo_empresa FROM empresa_bi WHERE codigo_empresa IN ({placeholders})",
+                f"SELECT codigo_empresa FROM dim_empresa WHERE codigo_empresa IN ({placeholders})",
                 tuple(codigos),
             )
             validos = {r["codigo_empresa"] for r in cursor.fetchall()}

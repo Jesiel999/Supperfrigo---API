@@ -217,8 +217,8 @@ _SQL_EMPRESA = """
     SELECT emp.codigo_empresa, emp.nome_empresa,
            d.razao_social, d.nome_fantasia, d.cnpj, d.ie, d.endereco,
            d.bairro, d.cidade, d.uf, d.cep, d.telefone
-    FROM empresa_bi emp
-    LEFT JOIN empresa_bi d ON d.codigo_empresa = emp.codigo_empresa
+    FROM dim_empresa emp
+    LEFT JOIN dim_empresa d ON d.codigo_empresa = emp.codigo_empresa
     WHERE emp.codigo_empresa = %s
     LIMIT 1
 """
@@ -243,7 +243,7 @@ def salvar_dados_empresa(codigo_empresa: int, payload: EmpresaTermoDados):
     conn = connection_mysql()
     cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT 1 FROM empresa_bi WHERE codigo_empresa = %s", (codigo_empresa,))
+        cursor.execute("SELECT 1 FROM dim_empresa WHERE codigo_empresa = %s", (codigo_empresa,))
         if not cursor.fetchone():
             raise HTTPException(404, "Empresa não encontrada")
 
@@ -251,7 +251,7 @@ def salvar_dados_empresa(codigo_empresa: int, payload: EmpresaTermoDados):
         colunas = list(dados.keys())
         cursor.execute(
             f"""
-            INSERT INTO empresa_bi (codigo_empresa, {", ".join(colunas)})
+            INSERT INTO dim_empresa (codigo_empresa, {", ".join(colunas)})
             VALUES (%s, {", ".join(["%s"] * len(colunas))})
             ON DUPLICATE KEY UPDATE {", ".join(f"{c} = VALUES({c})" for c in colunas)}
             """,
@@ -304,7 +304,7 @@ def gerar_termo(payload: GerarTermoRequest, current_user: dict = Depends(get_cur
         }
 
         # ---- colaborador -------------------------------------------------
-        cursor.execute("SELECT id, nome, cpf_cnpj FROM pessoa_bi WHERE id = %s LIMIT 1",
+        cursor.execute("SELECT id, nome, cpf_cnpj FROM dim_pessoa WHERE id = %s LIMIT 1",
                        (payload.id_colaborador,))
         colaborador = cursor.fetchone()
         if not colaborador:
@@ -404,7 +404,7 @@ def listar_emitidos(
             SELECT t.*, m.nome AS nome_modelo, p.nome AS nome_colaborador
             FROM termo_emitido t
             LEFT JOIN termo_modelo m ON m.id = t.id_modelo
-            LEFT JOIN pessoa_bi p ON p.id = t.id_colaborador
+            LEFT JOIN dim_pessoa p ON p.id = t.id_colaborador
             {where}
             ORDER BY t.gerado_em DESC
             LIMIT %s OFFSET %s

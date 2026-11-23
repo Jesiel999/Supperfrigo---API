@@ -127,7 +127,7 @@ def _montar_usuario_completo(user: dict, tenant_id: int | None = None) -> dict:
             """
             SELECT eb.codigo_empresa AS codigo, eb.nome_empresa AS nome
             FROM usuario_empresa ue
-            JOIN empresa_bi eb ON eb.codigo_empresa = ue.codigo_empresa
+            JOIN dim_empresa eb ON eb.codigo_empresa = ue.codigo_empresa
             WHERE ue.usuario_id = %s AND ue.tenant_id = %s
             ORDER BY eb.nome_empresa
             """,

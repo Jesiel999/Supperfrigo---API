@@ -43,10 +43,10 @@ def _buscar_chip(
 
         FROM chips c
 
-        LEFT JOIN pessoa_bi p
+        LEFT JOIN dim_pessoa p
             ON p.id = c.id_colaborador
 
-        LEFT JOIN empresa_bi emp
+        LEFT JOIN dim_empresa emp
             ON emp.codigo_empresa = c.id_empresa
 
         WHERE c.id = %s
@@ -107,10 +107,10 @@ def listar_chips(
 
             FROM chips c
 
-            LEFT JOIN pessoa_bi p
+            LEFT JOIN dim_pessoa p
                 ON p.id = c.id_colaborador
 
-            LEFT JOIN empresa_bi emp
+            LEFT JOIN dim_empresa emp
                 ON emp.codigo_empresa = c.id_empresa
 
             WHERE 1 = 1
@@ -371,7 +371,7 @@ def vincular_chip(
             SELECT
                 id,
                 nome
-            FROM pessoa_bi
+            FROM dim_pessoa
             WHERE id = %s
             LIMIT 1
         """, (payload.id_colaborador,))
@@ -570,7 +570,7 @@ def historico_chip(
 
             FROM equipamento_movimentacao m
 
-            LEFT JOIN pessoa_bi p
+            LEFT JOIN dim_pessoa p
                 ON p.id = m.id_colaborador
 
             WHERE m.tipo_ativo = 'chip'

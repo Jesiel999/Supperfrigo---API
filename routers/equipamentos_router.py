@@ -65,7 +65,7 @@ def _get_equipamento_or_404(cursor, equipamento_id: int):
 
         FROM parque_tecnologico e
 
-        LEFT JOIN empresa_bi emp
+        LEFT JOIN dim_empresa emp
             ON emp.codigo_empresa = e.id_empresa
 
         LEFT JOIN tipo_equipamento tipo
@@ -77,7 +77,7 @@ def _get_equipamento_or_404(cursor, equipamento_id: int):
         LEFT JOIN modelo
             ON modelo.id = e.id_modelo
 
-        LEFT JOIN pessoa_bi pessoa
+        LEFT JOIN dim_pessoa pessoa
             ON pessoa.id = e.id_colaborador
 
         WHERE e.id = %s
@@ -240,7 +240,7 @@ limit: int = Query(50, ge=1, le=200),
 
             FROM parque_tecnologico e
 
-            LEFT JOIN pessoa_bi pessoa
+            LEFT JOIN dim_pessoa pessoa
                 ON pessoa.id = e.id_colaborador
 
             {where_sql}
@@ -290,7 +290,7 @@ limit: int = Query(50, ge=1, le=200),
 
             FROM parque_tecnologico e
 
-            LEFT JOIN empresa_bi emp
+            LEFT JOIN dim_empresa emp
                 ON emp.codigo_empresa = e.id_empresa
 
             LEFT JOIN tipo_equipamento tipo
@@ -302,7 +302,7 @@ limit: int = Query(50, ge=1, le=200),
             LEFT JOIN modelo
                 ON modelo.id = e.id_modelo
 
-            LEFT JOIN pessoa_bi pessoa
+            LEFT JOIN dim_pessoa pessoa
                 ON pessoa.id = e.id_colaborador
 
             {where_sql}
@@ -424,7 +424,7 @@ def resumo_equipamentos():
 
             FROM parque_tecnologico e
 
-            LEFT JOIN empresa_bi emp
+            LEFT JOIN dim_empresa emp
                 ON emp.codigo_empresa = e.id_empresa
 
             WHERE e.ativo = 1
@@ -560,7 +560,7 @@ equipamento_id: int
                     id,
                     nome
 
-                FROM pessoa_bi
+                FROM dim_pessoa
 
                 WHERE id IN ({placeholders})
                 """,
@@ -981,7 +981,7 @@ payload: VincularRequest
                 id,
                 nome
 
-            FROM pessoa_bi
+            FROM dim_pessoa
 
             WHERE id = %s
 

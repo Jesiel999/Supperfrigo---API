@@ -181,7 +181,7 @@ def listar_empresas(conn=Depends(connection_mysql),
             SELECT
                 codigo_empresa,
                 nome_empresa
-            FROM empresa_bi
+            FROM dim_empresa
             ORDER BY nome_empresa
         """)
 

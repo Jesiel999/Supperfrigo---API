@@ -32,7 +32,7 @@ def equipamentos_do_colaborador(
             SELECT
                 id,
                 nome
-            FROM pessoa_bi
+            FROM dim_pessoa
             WHERE id = %s
             LIMIT 1
         """, (colaborador_id,))
@@ -81,7 +81,7 @@ def equipamentos_do_colaborador(
 
             FROM parque_tecnologico e
 
-            LEFT JOIN empresa_bi emp
+            LEFT JOIN dim_empresa emp
                 ON emp.codigo_empresa = e.id_empresa
 
             LEFT JOIN tipo_equipamento t
@@ -158,7 +158,7 @@ def chips_do_colaborador(
             SELECT
                 id,
                 nome
-            FROM pessoa_bi
+            FROM dim_pessoa
             WHERE id = %s
             LIMIT 1
         """, (colaborador_id,))
@@ -187,7 +187,7 @@ def chips_do_colaborador(
 
             FROM chip c
 
-            LEFT JOIN empresa_bi emp
+            LEFT JOIN dim_empresa emp
                 ON emp.codigo_empresa = c.id_empresa
 
             WHERE c.id_colaborador = %s
