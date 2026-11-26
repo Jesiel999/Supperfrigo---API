@@ -545,12 +545,19 @@ def get_fcp(
         _aplicar_filtro_empresa(filtros, params, id_empresa, permitidas)
 
         if data_inicio:
+            ini = f"{data_inicio}-01" if len(data_inicio) == 7 else data_inicio
             filtros.append("mes_competencia >= %s")
-            params.append(data_inicio)
+            params.append(ini)
 
         if data_fim:
+            if len(data_fim) == 7:
+                ano, mes = map(int, data_fim.split("-"))
+                prox_mes = date(ano + (mes // 12), (mes % 12) + 1, 1)
+                fim = (prox_mes - timedelta(days=1)).isoformat()
+            else:
+                fim = data_fim
             filtros.append("mes_competencia <= %s")
-            params.append(data_fim)
+            params.append(fim)
 
         where = f"WHERE {' AND '.join(filtros)}"
 
@@ -667,7 +674,7 @@ def get_fcp_pagar(
         # valor_nota: soma de TODAS as parcelas da mesma nota (empresa + fornecedor + nº documento).
         sql = f"""
             SELECT
-                f.codigo_raw                      AS codigo,
+                f.codigo_titulo                   AS codigo,
                 f.id_empresa,
                 f.id_pessoa,
                 f.numero_documento,
@@ -690,7 +697,7 @@ def get_fcp_pagar(
                 COALESCE((
                     SELECT SUM(r.valor_pago)
                     FROM recebimentos_bi r
-                    WHERE r.codigo_raw = f.codigo_raw
+                    WHERE r.codigo_raw = f.codigo_titulo
                 ), 0)                             AS valor_pago,
                 CASE
                     WHEN f.numero_documento IS NULL OR f.numero_documento = '' THEN f.valor_nominal
