@@ -1,6 +1,11 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routers.sances.financeiro import (
+    fcp_router,
+    dre_router,
+    fc_router
+)
 
 from routers import (
     chips_router,
@@ -43,7 +48,12 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(menu_router.router, prefix="", tags=["Menu"])
 app.include_router(pipeline_router.router, prefix="/pipeline", tags=["Pipeline"])
+
 app.include_router(financeiro_router.router, prefix="/financeiro", tags=["Financeiro"])
+app.include_router(dre_router.router, prefix="/financeiro", tags=["DRE"])
+app.include_router(fcp_router.router, prefix="/financeiro", tags=["FCP"])
+app.include_router(fc_router.router, prefix="/financeiro", tags=["FC"])
+
 app.include_router(estoque_router.router, prefix="/estoque", tags=["Estoque"])
 app.include_router(estoque_veiculos_router.router, prefix="/estoque_veiculos", tags=["Estoque Veículos"])
 app.include_router(pos_venda_router.router, prefix="/pos_venda", tags=["Pos Venda"])
