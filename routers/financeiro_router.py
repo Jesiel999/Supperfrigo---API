@@ -670,7 +670,7 @@ def get_fcp_pagar(
             filtros.append(f"{col_data} <= %s")
             params.append(fim.isoformat())
 
-        # valor_pago: mesma fonte da view (recebimentos_bi por codigo_raw).
+        # valor_pago: mesma fonte da view (fato_financeiro_recebimento por codigo_raw).
         # valor_nota: soma de TODAS as parcelas da mesma nota (empresa + fornecedor + nº documento).
         sql = f"""
             SELECT
@@ -696,7 +696,7 @@ def get_fcp_pagar(
                 f.valor_total                     AS valor_total_bruto,
                 COALESCE((
                     SELECT SUM(r.valor_pago)
-                    FROM recebimentos_bi r
+                    FROM fato_financeiro_recebimento r
                     WHERE r.codigo_raw = f.codigo_titulo
                 ), 0)                             AS valor_pago,
                 CASE
@@ -840,7 +840,7 @@ def get_fcp_titulos(
                 f.*,
                 COALESCE((
                     SELECT r.valor_pago
-                    FROM recebimentos_bi r
+                    FROM fato_financeiro_recebimento r
                     WHERE CAST(r.codigo_raw AS CHAR) = CAST(f.codigo_raw AS CHAR)
                     ORDER BY r.id DESC
                     LIMIT 1
@@ -954,7 +954,7 @@ def get_fcp_titulos(
                 f.*,
                 COALESCE((
                     SELECT r.valor_pago
-                    FROM recebimentos_bi r
+                    FROM fato_financeiro_recebimento r
                     WHERE CAST(r.codigo_raw AS CHAR) = CAST(f.codigo_raw AS CHAR)
                     ORDER BY r.id DESC
                     LIMIT 1
@@ -1238,7 +1238,7 @@ def get_fluxo_caixa_titulos(
             SELECT
                 f.*,
                 COALESCE(NULLIF((
-                    SELECT SUM(r.valor_pago) FROM recebimentos_bi r WHERE r.codigo_raw = f.codigo_raw
+                    SELECT SUM(r.valor_pago) FROM fato_financeiro_recebimento r WHERE r.codigo_raw = f.codigo_raw
                 ), 0), f.valor_total) AS valor_pago_calc
             FROM fato_financeiro_titulo f
             WHERE {' AND '.join(filtros)}
