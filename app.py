@@ -4,7 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers.sances.financeiro import (
     fcp_router,
     dre_router,
-    fc_router
+    fc_router,
+    inadimplencia_router,
+    pmp_router,
+    pmr_router,
+    pagar_router,
+    receber_router
 )
 
 from routers import (
@@ -50,6 +55,11 @@ app.include_router(menu_router.router, prefix="", tags=["Menu"])
 app.include_router(pipeline_router.router, prefix="/pipeline", tags=["Pipeline"])
 
 app.include_router(financeiro_router.router, prefix="/financeiro", tags=["Financeiro"])
+app.include_router(inadimplencia_router.router, prefix="/financeiro", tags=["Inadimplência"])
+app.include_router(pagar_router.router, prefix="/financeiro", tags=["Pagar"])
+app.include_router(receber_router.router, prefix="/financeiro", tags=["Receber"])
+app.include_router(pmp_router.router, prefix="/financeiro", tags=["PMP"])
+app.include_router(pmr_router.router, prefix="/financeiro", tags=["PMR"])
 app.include_router(dre_router.router, prefix="/financeiro", tags=["DRE"])
 app.include_router(fcp_router.router, prefix="/financeiro", tags=["FCP"])
 app.include_router(fc_router.router, prefix="/financeiro", tags=["FC"])
